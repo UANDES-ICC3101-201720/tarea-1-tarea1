@@ -7,34 +7,118 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 #include "types.h"
 #include "const.h"
 #include "util.h"
 
 // TODO: implement
-int serial_binsearch() {
-    return 0;
+int serial_binsearch(int sorted_list[], int min, int max, int x)
+{
+    if (max < min)
+	{
+        return -1;
+	}    
+	int mid = min + (max-min)/2;
+    if (x<sorted_list[mid])
+	{
+        return serial_binsearch(sorted_list, min, mid-1,x);
+	}
+    else if (x > sorted_list[mid])
+	{
+        return serial_binsearch(sorted_list, mid+1, max,x);
+	}
+    else
+	{
+        return mid;
+	}
 }
 
 // TODO: implement
-int parallel_binsearch() {
+int parallel_binsearch() 
+{
     return 0;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     /* TODO: move this time measurement to right before the execution of each binsearch algorithms
      * in your experiment code. It now stands here just for demonstrating time measurement. */
-    clock_t cbegin = clock();
 
-    printf("[binsearch] Starting up...\n");
+	//clock first step
+    struct timespec start, finish;
+	double elapsed = 0;
 
-    /* Get the number of CPU cores available */
-    printf("[binsearch] Number of cores available: '%ld'\n",
-           sysconf(_SC_NPROCESSORS_ONLN));
+	/* Get the wall clock time at start */
+	clock_gettime(CLOCK_MONOTONIC, &start);
 
-    /* TODO: parse arguments with getopt */
+
+	
+	printf("[binsearch] Starting up...\n");
+
+	/* Get the number of CPU cores available */
+	printf("[binsearch] Number of cores available: '%ld'\n", sysconf(_SC_NPROCESSORS_ONLN));
+
+	// run the program
+	int lista[20]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+	int resultado = serial_binsearch(lista,0,sizeof(lista)/sizeof(lista[0]),14);
+	printf("La posicion del numero es: %d \n",resultado);
+
+
+
+	int T = 0;
+	int E = 0;
+	int P = 0;
+	int index;
+	int c;
+
+	opterr = 0;
+
+
+	while ((c = getopt (argc, argv, "E:T:P:")) != -1)
+		switch (c){
+			case 'E':
+				E = atoi(optarg);
+				break;
+			case 'P':
+				P = atoi(optarg);
+				break;
+			case 'T':
+				T = atoi(optarg);
+				break;
+			
+			case '?':
+				if (optopt == 'E' || optopt == 'P' || optopt == 'T')
+				  fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+				else if (isprint(optopt))
+				  fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+				else
+				  fprintf (stderr,
+					   "Unknown option character `\\x%x'.\n",
+					   optopt);
+				return 1;
+			default:
+				abort ();
+			}
+
+
+	printf ( "T = %d\nE = %d\nP = %d\n",T, E, P);
+
+	for (index = optind; index < argc; index++)
+		printf ("Non-option argument %s\n", argv[index]);
 
     /* TODO: start datagen here as a child process. */
+	int p_id = fork();
+    
+    	if(p_id == 0)
+	{
+    	printf("%s%d\n","Son Process ID: ", getpid());
+    	execlp("./datagen","./datagen",NULL);
+    	}
+    	else if (p_id<=0)
+	{
+    	printf("%s\n", "Error creating son process");
+	}
 
     /* TODO: implement code for your experiments using data provided by datagen and your
      * serial and parallel versions of binsearch.
@@ -47,13 +131,16 @@ int main(int argc, char** argv) {
      * experiments
      * */
 
-    /* Probe time elapsed. */
-    clock_t cend = clock();
+	/* Get the wall clock time at finish */
+	clock_gettime(CLOCK_MONOTONIC, &finish);
 
-    // Time elapsed in miliseconds.
-    double time_elapsed = ((double) (cend - cbegin) / CLOCKS_PER_SEC) * 1000;
+	/* Calculate time elapsed */
+	elapsed = (finish.tv_sec - start.tv_sec);
+	elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
-    printf("Time elapsed '%lf' [ms].\n", time_elapsed);
+	/* Print the time elapsed (in seconds) */
+	printf("Time elapsed running this program: ");
+	printf("%lf\n", elapsed);
 
-    exit(0);
+    
 }

@@ -1,8 +1,10 @@
 //
 // Created by Claudio Alvarez Gomez on 8/16/18.
 //
+#include <stdio.h>
 #include "util.h"
 #include <math.h>
+#include "libm.a"
 
 /* mean
  * vec: pointer to an array containing double values
